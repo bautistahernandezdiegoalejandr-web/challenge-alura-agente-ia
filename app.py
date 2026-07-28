@@ -33,7 +33,7 @@ def cargar_base_conocimiento():
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
-   llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.3)
+    llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.3)
     
     template = (
         "Eres un asistente virtual corporativo útil y amable para Atenea Online. "
