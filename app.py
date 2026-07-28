@@ -17,9 +17,9 @@ st.set_page_config(page_title="Agente IA - Atenea Online", page_icon="🤖")
 st.title("🤖 Asistente Virtual Corporativo (Atenea Online)")
 st.write("Pregúntame cualquier duda sobre las normativas y documentos de la empresa.")
 
-# 1. Cargar y procesar el PDF de forma automática al iniciar la app
+# 1. Cargar y procesar el PDF (Renombramos la función para limpiar la caché de Streamlit)
 @st.cache_resource
-def inicializar_rag():
+def cargar_base_conocimiento():
     pdf_path = "documento_empresa.pdf"
     loader = PyPDFLoader(pdf_path)
     documentos = loader.load()
@@ -27,8 +27,8 @@ def inicializar_rag():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     documentos_procesados = text_splitter.split_documents(documentos)
     
-    # Modelo de embeddings corregido y totalmente compatible
-    embeddings = GoogleGenerativeAIEmbeddings(model="embedding-001")
+    # Modelo de embeddings oficial y actualizado
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
@@ -54,9 +54,9 @@ def inicializar_rag():
     )
     return rag_chain
 
-# Inicializamos el RAG de forma segura
+# Inicializamos el RAG con la nueva función
 try:
-    rag_chain = inicializar_rag()
+    rag_chain = cargar_base_conocimiento()
     st.success("✅ Base de conocimiento cargada correctamente.")
 except Exception as e:
     st.error(f"Error al cargar el documento: {e}")
@@ -71,7 +71,7 @@ if st.button("Enviar Pregunta"):
             with st.spinner("Buscando respuesta..."):
                 try:
                     respuesta = rag_chain.invoke(pregunta_usuario)
-                    st.markdown(f"### Respuesta:")
+                    st.markdown("### Respuesta:")
                     st.write(respuesta)
                 except Exception as err:
                     st.error(f"Ocurrió un error al procesar tu consulta: {err}")
