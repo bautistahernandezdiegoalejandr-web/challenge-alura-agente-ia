@@ -4,8 +4,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
-from langchain_classic.chains import create_retrieval_chain
-from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
 # Configurar API Key de forma segura desde los secretos de Streamlit
@@ -27,11 +27,10 @@ def inicializar_rag():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     documentos_procesados = text_splitter.split_documents(documentos)
     
-    embeddings = GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
-    # Usamos gemini-1.5-flash que tiene soporte completo en el tier gratuito
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.3)
     
     system_prompt = (
