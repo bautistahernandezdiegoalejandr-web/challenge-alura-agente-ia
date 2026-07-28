@@ -2,7 +2,7 @@ import streamlit as st
 import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
@@ -10,8 +10,8 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
 # Configurar API Key de forma segura desde los secretos de Streamlit
-if "GOOGLE_API_KEY" in st.secrets:
-    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+if "GROQ_API_KEY" in st.secrets:
+    os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
 # Configuración de la página en Streamlit
 st.set_page_config(page_title="Agente IA - Atenea Online", page_icon="🤖")
@@ -33,7 +33,7 @@ def cargar_base_conocimiento():
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
+   llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.3)
     
     template = (
         "Eres un asistente virtual corporativo útil y amable para Atenea Online. "
