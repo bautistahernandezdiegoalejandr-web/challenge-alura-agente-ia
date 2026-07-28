@@ -2,7 +2,6 @@ streamlit
 langchain
 langchain-community
 langchain-text-splitters
-langchain-google-genai==2.0.10
-google-generativeai
+langchain-google-genai
 faiss-cpu
 pypdf
