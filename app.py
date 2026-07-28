@@ -20,18 +20,18 @@ st.write("Pregúntame cualquier duda sobre las normativas y documentos de la emp
 # 1. Cargar y procesar el PDF de forma automática al iniciar la app
 @st.cache_resource
 def inicializar_rag():
-    pdf_path = "documento_empresa.pdf"  # Asegúrate de subir tu PDF al repositorio
+    pdf_path = "documento_empresa.pdf"
     loader = PyPDFLoader(pdf_path)
     documentos = loader.load()
     
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     documentos_procesados = text_splitter.split_documents(documentos)
     
-    # Modelo de embeddings actualizado
     embeddings = GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
+    # Usamos gemini-1.5-flash optimizado para la API actual
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.3)
     
     system_prompt = (
@@ -53,13 +53,17 @@ except Exception as e:
     st.error(f"Error al cargar el documento: {e}")
 
 # 2. Interfaz de Chat
-pregunta_usuario = st.text_input("¿Qué te gustaría consultar hoy?")
+pregunta_usuario = st.text_input("¿Qué te gustaría consultar hoy?", value="¿Cuáles son las normas de conducta y comunicación establecidas para los foros de la comunidad y canales de la plataforma?")
 
 if st.button("Enviar Pregunta"):
     if pregunta_usuario:
         with st.spinner("Buscando respuesta..."):
-            respuesta = rag_chain.invoke({"input": pregunta_usuario})
-            st.markdown(f"### Respuesta:")
-            st.write(respuesta["answer"])
+            try:
+                # Invocación segura pasando el input correctamente
+                respuesta = rag_chain.invoke({"input": pregunta_usuario})
+                st.markdown(f"### Respuesta:")
+                st.write(respuesta.get("answer", str(respuesta)))
+            except Exception as err:
+                st.error(f"Ocurrió un error al procesar tu consulta: {err}")
     else:
         st.warning("Por favor escribe una pregunta.")
