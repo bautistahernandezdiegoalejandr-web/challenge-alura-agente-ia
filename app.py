@@ -27,8 +27,8 @@ def inicializar_rag():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     documentos_procesados = text_splitter.split_documents(documentos)
     
-    # Modelo de embeddings actualizado y compatible
-    embeddings = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
+    # Modelo de embeddings corregido y totalmente compatible
+    embeddings = GoogleGenerativeAIEmbeddings(model="embedding-001")
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
