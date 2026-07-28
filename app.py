@@ -2,7 +2,8 @@ import streamlit as st
 import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -28,7 +29,7 @@ def cargar_base_conocimiento():
     documentos_procesados = text_splitter.split_documents(documentos)
     
     # Modelo de embeddings oficial y actualizado
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
