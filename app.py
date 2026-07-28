@@ -4,9 +4,9 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 # Configurar API Key de forma segura desde los secretos de Streamlit
 if "GOOGLE_API_KEY" in st.secrets:
@@ -33,16 +33,26 @@ def inicializar_rag():
     
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.3)
     
-    system_prompt = (
+    template = (
         "Eres un asistente virtual corporativo útil y amable para Atenea Online. "
         "Usa los siguientes fragmentos de contexto recuperado para responder a la pregunta. "
-        "Si no sabes la respuesta basada en el contexto, di que no tienes esa información."
-        "\n\n{context}"
+        "Si no sabes la respuesta basada en el contexto, di que no tienes esa información.\n\n"
+        "Contexto:\n{context}\n\n"
+        "Pregunta: {input}"
     )
-    prompt = ChatPromptTemplate.from_messages([("system", system_prompt), ("human", "{input}")])
+    prompt = ChatPromptTemplate.from_template(template)
     
-    question_answer_chain = create_stuff_documents_chain(llm, prompt)
-    return create_retrieval_chain(retriever, question_answer_chain)
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+    
+    # Construcción de la cadena moderna con LCEL
+    rag_chain = (
+        {"context": retriever | format_docs, "input": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return rag_chain
 
 # Inicializamos el RAG
 try:
@@ -58,9 +68,9 @@ if st.button("Enviar Pregunta"):
     if pregunta_usuario:
         with st.spinner("Buscando respuesta..."):
             try:
-                respuesta = rag_chain.invoke({"input": pregunta_usuario})
+                respuesta = rag_chain.invoke(pregunta_usuario)
                 st.markdown(f"### Respuesta:")
-                st.write(respuesta.get("answer", str(respuesta)))
+                st.write(respuesta)
             except Exception as err:
                 st.error(f"Ocurrió un error al procesar tu consulta: {err}")
     else:
