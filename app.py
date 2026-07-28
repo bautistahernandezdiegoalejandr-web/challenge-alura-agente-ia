@@ -28,7 +28,7 @@ def cargar_base_conocimiento():
     documentos_procesados = text_splitter.split_documents(documentos)
     
     # Modelo de embeddings oficial y actualizado
-    embeddings = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
