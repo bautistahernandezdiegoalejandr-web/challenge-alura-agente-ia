@@ -27,8 +27,8 @@ def inicializar_rag():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     documentos_procesados = text_splitter.split_documents(documentos)
     
-    # Modelo de embeddings actualizado y oficial
-    embeddings = GoogleGenerativeAIEmbeddings(model="text-embedding-004")
+    # Modelo de embeddings compatible y estable
+    embeddings = GoogleGenerativeAIEmbeddings(model="embedding-001")
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
@@ -54,24 +54,28 @@ def inicializar_rag():
     )
     return rag_chain
 
-# Inicializamos el RAG
+# Inicializamos el RAG de forma segura
 try:
     rag_chain = inicializar_rag()
     st.success("✅ Base de conocimiento cargada correctamente.")
 except Exception as e:
     st.error(f"Error al cargar el documento: {e}")
+    rag_chain = None
 
 # 2. Interfaz de Chat
 pregunta_usuario = st.text_input("¿Qué te gustaría consultar hoy?", value="¿Cuáles son las normas de conducta y comunicación establecidas para los foros de la comunidad y canales de la plataforma?")
 
 if st.button("Enviar Pregunta"):
     if pregunta_usuario:
-        with st.spinner("Buscando respuesta..."):
-            try:
-                respuesta = rag_chain.invoke(pregunta_usuario)
-                st.markdown(f"### Respuesta:")
-                st.write(respuesta)
-            except Exception as err:
-                st.error(f"Ocurrió un error al procesar tu consulta: {err}")
+        if rag_chain is not None:
+            with st.spinner("Buscando respuesta..."):
+                try:
+                    respuesta = rag_chain.invoke(pregunta_usuario)
+                    st.markdown(f"### Respuesta:")
+                    st.write(respuesta)
+                except Exception as err:
+                    st.error(f"Ocurrió un error al procesar tu consulta: {err}")
+        else:
+            st.error("La base de conocimiento no está inicializada debido al error anterior.")
     else:
         st.warning("Por favor escribe una pregunta.")
