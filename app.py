@@ -31,8 +31,8 @@ def inicializar_rag():
     vector_store = FAISS.from_documents(documentos_procesados, embeddings)
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
     
-    # Usamos gemini-1.5-flash optimizado para la API actual
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.3)
+    # Modelo actualizado a gemini-2.0-flash
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
     
     system_prompt = (
         "Eres un asistente virtual corporativo útil y amable para Atenea Online. "
@@ -59,7 +59,6 @@ if st.button("Enviar Pregunta"):
     if pregunta_usuario:
         with st.spinner("Buscando respuesta..."):
             try:
-                # Invocación segura pasando el input correctamente
                 respuesta = rag_chain.invoke({"input": pregunta_usuario})
                 st.markdown(f"### Respuesta:")
                 st.write(respuesta.get("answer", str(respuesta)))
